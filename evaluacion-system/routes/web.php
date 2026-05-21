@@ -64,12 +64,14 @@ Route::middleware('auth')->group(function () {
     });
 
     // ---------- Evaluation periods (Admins) ----------
-    Route::middleware('admin')->group(function () {
+    Route::middleware(['role:Administrador'])->group(function () {
         Route::resource('evaluation-periods', EvaluationPeriodController::class)
             ->except(['show']);
         // <-- nuevo recurso para los periodos
         Route::resource('periods', EvaluationPeriodController::class)
             ->except(['show']);
+        // Toggle active/inactive status of a period
+        Route::patch('periods/{period}/toggle', [EvaluationPeriodController::class, 'toggleStatus'])->name('periods.toggle');
     });
 
     // ---------- Evaluations (Admins & Supervisors) ----------
