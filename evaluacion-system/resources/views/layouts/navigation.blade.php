@@ -60,5 +60,3 @@
         </x-dropdown>
     </div>
 </header>
-
-"sada"
