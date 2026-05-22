@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use App\Models\Worker;
 
 class UserController extends Controller
 {
@@ -28,6 +29,9 @@ class UserController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => ['required', 'exists:roles,name'],
+            // Optional fields for worker creation
+            'document_id' => ['nullable', 'string', 'max:20', 'unique:workers,document_id'],
+            'position' => ['nullable', 'string', 'max:255'],
         ]);
 
         $user = User::create([
@@ -38,6 +42,18 @@ class UserController extends Controller
         ]);
 
         $user->assignRole($request->role);
+
+        // Automatically create a corresponding Worker record for staff roles
+        if (in_array($request->role, ['Talento Humano', 'Coordinador de Convivencia', 'Coordinador Académico', 'Rector'])) {
+            Worker::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'document_id' => $request->input('document_id') ?? '',
+                'position' => $request->input('position') ?? '',
+                'type' => $request->role,
+                'is_active' => true,
+            ]);
+        }
 
         return redirect()->route('users.index')->with('status', 'Usuario creado exitosamente.');
     }

@@ -54,14 +54,20 @@ Route::middleware('auth')->group(function () {
     Route::post('/support/send', [SupportController::class, 'send'])
         ->name('support.send');
 
-    // ---------- Workers (Admins only) ----------
-    Route::middleware(['role:Administrador'])->group(function () {
-        Route::resource('workers', WorkerController::class)->except(['show']);
-        Route::post('workers/import', [WorkerController::class, 'importCsv'])
-            ->name('workers.import');
-        Route::patch('workers/{worker}/toggle', [WorkerController::class, 'toggleStatus'])
-            ->name('workers.toggle');
-    });
+    // ---------- Workers (Admins & Staff) ----------
+    // View access for admins, Talent, Coordinators and Rector
+    Route::middleware(['role:Administrador|Talento Humano|Coordinador de Convivencia|Coordinador Académico|Rector'])
+        ->group(function () {
+            Route::get('workers', [WorkerController::class, 'index'])->name('workers.index');
+            Route::get('workers/{worker}/edit', [WorkerController::class, 'edit'])->name('workers.edit');
+        });
+    // Edit / toggle limited to admin, Talent, Rector
+    Route::middleware(['role:Administrador|Talento Humano|Rector'])
+        ->group(function () {
+            Route::resource('workers', WorkerController::class)->except(['show', 'index', 'edit']);
+            Route::post('workers/import', [WorkerController::class, 'importCsv'])->name('workers.import');
+            Route::patch('workers/{worker}/toggle', [WorkerController::class, 'toggleStatus'])->name('workers.toggle');
+        });
 
     // ---------- Evaluation periods (Admins) ----------
     Route::middleware(['role:Administrador'])->group(function () {
@@ -74,38 +80,39 @@ Route::middleware('auth')->group(function () {
         Route::patch('periods/{period}/toggle', [EvaluationPeriodController::class, 'toggleStatus'])->name('periods.toggle');
     });
 
-    // ---------- Evaluations (Admins & Supervisors) ----------
-    Route::middleware(['role:Administrador'])->group(function () {
-        // Index route for evaluations
-        Route::get('evaluations', [EvaluationController::class, 'index'])
-            ->name('evaluations.index');
+    // ---------- Evaluations (Admins & Staff) ----------
+    Route::middleware(['role:Administrador|Talento Humano|Coordinador de Convivencia|Coordinador Académico|Rector'])
+        ->group(function () {
+            // Index route for evaluations
+            Route::get('evaluations', [EvaluationController::class, 'index'])
+                ->name('evaluations.index');
 
-        // Crear evaluación para un trabajador
-        Route::get('workers/{worker}/create-evaluation', [EvaluationController::class, 'createForWorker'])
-            ->name('evaluations.createForWorker');
+            // Crear evaluación para un trabajador
+            Route::get('workers/{worker}/create-evaluation', [EvaluationController::class, 'createForWorker'])
+                ->name('evaluations.createForWorker');
 
-        // Evaluaciones propias (trabajador)
-        Route::get('workers/{worker}/evaluate', [EvaluationController::class, 'evaluate'])
-            ->name('evaluations.evaluate');
-        Route::post('workers/{worker}/evaluate', [EvaluationController::class, 'storeEvaluation'])
-            ->name('evaluations.store');
+            // Evaluaciones propias (trabajador)
+            Route::get('workers/{worker}/evaluate', [EvaluationController::class, 'evaluate'])
+                ->name('evaluations.evaluate');
+            Route::post('workers/{worker}/evaluate', [EvaluationController::class, 'storeEvaluation'])
+                ->name('evaluations.store');
 
-        // Evaluación de supervisor
-        Route::get('workers/{worker}/supervisor-evaluation', [EvaluationController::class, 'supervisorEvaluate'])
-            ->name('evaluations.supervisorEvaluate');
-        Route::post('workers/{worker}/supervisor-evaluation', [EvaluationController::class, 'storeSupervisorEvaluation'])
-            ->name('evaluations.storeSupervisor');
+            // Evaluación de supervisor
+            Route::get('workers/{worker}/supervisor-evaluation', [EvaluationController::class, 'supervisorEvaluate'])
+                ->name('evaluations.supervisorEvaluate');
+            Route::post('workers/{worker}/supervisor-evaluation', [EvaluationController::class, 'storeSupervisorEvaluation'])
+                ->name('evaluations.storeSupervisor');
 
-        // Ver y editar evaluaciones
-        Route::get('evaluations/{evaluation}', [EvaluationController::class, 'show'])
-            ->name('evaluations.show');
-        Route::get('evaluations/{evaluation}/edit', [EvaluationController::class, 'edit'])
-            ->name('evaluations.edit');
-        Route::put('evaluations/{evaluation}', [EvaluationController::class, 'update'])
-            ->name('evaluations.update');
+            // Ver y editar evaluaciones
+            Route::get('evaluations/{evaluation}', [EvaluationController::class, 'show'])
+                ->name('evaluations.show');
+            Route::get('evaluations/{evaluation}/edit', [EvaluationController::class, 'edit'])
+                ->name('evaluations.edit');
+            Route::put('evaluations/{evaluation}', [EvaluationController::class, 'update'])
+                ->name('evaluations.update');
             Route::get('evaluations/export/{period}', [EvaluationController::class, 'exportCsv'])
                 ->name('evaluations.export');
-    });
+        });
 
     // ---------- Admin‑only roles ----------
     Route::middleware(['role:Administrador'])->group(function () {
