@@ -66,7 +66,7 @@ class WorkerController extends Controller
             'document_id' => 'required|string|unique:workers,document_id,'.$worker->id,
             'email' => 'nullable|email|max:255',
             'position' => 'required|string|max:255',
-            'type' => 'required|in:Docente,Administrativo',
+            'type' => 'required|string|max:255',
         ]);
 
         $worker->update($request->all());
