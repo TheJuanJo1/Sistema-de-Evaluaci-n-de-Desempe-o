@@ -17,10 +17,11 @@ class WorkerDocumentManager extends Component
      * Mensajes de validación en español.
      */
     protected $messages = [
-        'file.required' => 'Debe seleccionar un archivo.',
-        'file.mimes' => 'Formato no permitido (solo PDF, JPG, JPEG, PNG).',
-        'file.max' => 'El archivo no puede superar los 5 MB.',
-        'documentName.required' => 'El nombre del documento es obligatorio.',
+        'files.required' => 'Debe seleccionar al menos un archivo.',
+        'files.array' => 'Los archivos seleccionados deben ser una lista.',
+        'files.*.file' => 'Uno de los elementos no es un archivo válido.',
+        'files.*.mimes' => 'Uno o más archivos no tienen formato permitido (solo PDF, JPG, JPEG, PNG).',
+        'files.*.max' => 'Uno o más archivos superan el límite de 5 MB.',
         'documentName.max' => 'El nombre del documento no puede exceder 255 caracteres.',
         'documentType.max' => 'El tipo del documento no puede exceder 100 caracteres.',
     ];
@@ -29,13 +30,14 @@ class WorkerDocumentManager extends Component
      * Reglas de validación en español.
      */
     protected $rules = [
-        'file' => 'required|mimes:pdf,jpg,jpeg,png|max:5120', // 5MB
-        'documentName' => 'required|string|max:255',
+        'files' => 'required|array|min:1',
+        'files.*' => 'file|mimes:pdf,jpg,jpeg,png|max:5120', // 5MB cada uno
+        'documentName' => 'nullable|string|max:255',
         'documentType' => 'nullable|string|max:100',
     ];
 
     public Worker $worker;
-    public $file = null;
+    public $files = []; // Cambiado a arreglo para soporte múltiple
     public $documentName;
     public $documentType;
 
@@ -44,44 +46,47 @@ class WorkerDocumentManager extends Component
         $this->worker = $worker;
     }
 
-    public function updatedFile()
+    public function updatedFiles()
     {
-        // Limpiar errores previos del archivo
-        $this->resetErrorBag('file');
+        // Limpiar errores previos de archivos
+        $this->resetErrorBag('files');
 
         try {
-            $this->validateOnly('file');
+            $this->validateOnly('files.*');
         } catch (\Illuminate\Validation\ValidationException $e) {
-            $this->file = null;
+            $this->files = [];
             throw $e;
         }
 
-        if ($this->file) {
-            // Autocompletar el nombre del documento si está vacío
+        // Si se subió exactamente UN archivo, autocompletamos la interfaz
+        if (count($this->files) === 1) {
+            $singleFile = $this->files[0];
             if (empty($this->documentName)) {
-                $originalName = $this->file->getClientOriginalName();
+                $originalName = $singleFile->getClientOriginalName();
                 $this->documentName = pathinfo($originalName, PATHINFO_FILENAME);
             }
-
-            // Autocompletar el tipo del documento si está vacío
             if (empty($this->documentType)) {
-                $this->documentType = strtoupper($this->file->getClientOriginalExtension());
+                $this->documentType = strtoupper($singleFile->getClientOriginalExtension());
             }
+        } else {
+            // Si son múltiples, limpiamos los campos manuales para evitar duplicaciones
+            $this->reset(['documentName', 'documentType']);
         }
     }
 
     public function upload()
     {
-        // Validar datos usando las reglas y mensajes definidos arriba
-        // Ensure Livewire temporary upload directory exists (Livewire uses local disk by default)
+        // Asegurarse de que el directorio temporal existe
         if (!Storage::disk('local')->exists('livewire-tmp')) {
             Storage::disk('local')->makeDirectory('livewire-tmp');
         }
-        // Si no se ha seleccionado ningún archivo, abortar y mostrar error
-        if (! $this->file) {
-            $this->addError('file', 'Debe seleccionar un archivo antes de subir.');
+
+        // Si no se ha seleccionado ningún archivo, abortar
+        if (empty($this->files)) {
+            $this->addError('files', 'Debe seleccionar al menos un archivo antes de subir.');
             return;
         }
+
         // Validar input (reglas y mensajes definidos en el componente)
         $this->validate();
 
@@ -91,37 +96,88 @@ class WorkerDocumentManager extends Component
             Storage::disk('private')->makeDirectory($directory);
         }
 
-        // Intentar almacenar el archivo
-        // Verificar que el archivo sea válido antes de intentar guardarlo
-        if (!$this->file->isValid()) {
-            $this->addError('file', 'El archivo seleccionado no es válido.');
-            return;
-        }
-        try {
-            // Intentar almacenar el archivo en el disco privado
-            $path = $this->file->store($directory, 'private');
-            if (! $path) {
-                $this->addError('file', 'No se pudo subir el archivo.');
-                return;
+        $uploadedCount = 0;
+        $errorsCount = 0;
+
+        foreach ($this->files as $fileItem) {
+            if (!$fileItem->isValid()) {
+                $errorsCount++;
+                continue;
             }
-        } catch (\Exception $e) {
-            // Registrar el error para depuración y mostrar mensaje amigable
-            Log::error('Error al subir archivo: '.$e->getMessage());
-            $this->addError('file', 'Ocurrió un error inesperado al subir el archivo.');
-            return;
+
+            try {
+                // Almacenar el archivo en el disco privado
+                $path = $fileItem->store($directory, 'private');
+                if (!$path) {
+                    $errorsCount++;
+                    continue;
+                }
+
+                $originalName = $fileItem->getClientOriginalName();
+                
+                // Si es exactamente un archivo, y se le especificó nombre, usarlo. Sino usar original.
+                $finalName = (count($this->files) === 1 && !empty($this->documentName))
+                    ? $this->documentName
+                    : pathinfo($originalName, PATHINFO_FILENAME);
+
+                // Si es exactamente un archivo, y se le especificó tipo, usarlo. Sino usar la extensión en mayúsculas.
+                $finalType = (count($this->files) === 1 && !empty($this->documentType))
+                    ? $this->documentType
+                    : strtoupper($fileItem->getClientOriginalExtension());
+
+                WorkerDocument::create([
+                    'worker_id' => $this->worker->id,
+                    'name' => $finalName,
+                    'path' => $path,
+                    'type' => $finalType,
+                ]);
+
+                $uploadedCount++;
+
+            } catch (\Exception $e) {
+                Log::error('Error al subir archivo en lote: '.$e->getMessage());
+                $errorsCount++;
+            }
         }
 
-
-        WorkerDocument::create([
-            'worker_id' => $this->worker->id,
-            'name' => $this->documentName,
-            'path' => $path,
-            'type' => $this->documentType,
-        ]);
-
-        $this->reset(['file', 'documentName', 'documentType']);
+        // Limpiar estados
+        $this->reset(['files', 'documentName', 'documentType']);
         $this->dispatch('document-uploaded');
-        session()->flash('status', 'Documento subido correctamente.');
+
+        if ($uploadedCount > 0) {
+            $msg = $uploadedCount === 1
+                ? 'Documento subido correctamente.'
+                : "{$uploadedCount} documentos subidos correctamente.";
+            
+            if ($errorsCount > 0) {
+                $msg .= " (Hubo errores en {$errorsCount} archivo(s)).";
+            }
+            session()->flash('status', $msg);
+        } else {
+            $this->addError('files', 'No se pudo guardar ningún archivo.');
+        }
+    }
+
+    public function removeFile($index)
+    {
+        if (isset($this->files[$index])) {
+            array_splice($this->files, $index, 1);
+        }
+
+        // Si no quedan archivos en cola, limpiar campos
+        if (empty($this->files)) {
+            $this->reset(['files', 'documentName', 'documentType']);
+        } elseif (count($this->files) === 1) {
+            // Si queda exactamente uno, autocompletar si está vacío
+            $singleFile = $this->files[0];
+            if (empty($this->documentName)) {
+                $originalName = $singleFile->getClientOriginalName();
+                $this->documentName = pathinfo($originalName, PATHINFO_FILENAME);
+            }
+            if (empty($this->documentType)) {
+                $this->documentType = strtoupper($singleFile->getClientOriginalExtension());
+            }
+        }
     }
 
     public function delete($documentId)
