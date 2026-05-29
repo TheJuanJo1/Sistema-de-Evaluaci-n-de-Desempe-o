@@ -50,7 +50,7 @@
             }
         }
     }">
-        <form wire:submit.prevent="upload" enctype="multipart/form-data" class="space-y-4">
+        <form wire:submit.prevent="saveDocuments" enctype="multipart/form-data" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="documentName" class="block text-sm font-semibold text-slate-700 mb-1">Nombre del Documento <span class="text-xs text-slate-400 font-normal">(Opcional para lote)</span></label>
@@ -150,12 +150,12 @@
                         wire:loading.attr="disabled" 
                         {{ empty($files) ? 'disabled' : '' }} 
                         class="inline-flex items-center px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition duration-200 shadow-md disabled:opacity-50 disabled:bg-slate-300 disabled:cursor-not-allowed uppercase tracking-wider">
-                    <svg wire:loading wire:target="upload" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg wire:loading wire:target="saveDocuments" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                     </svg>
-                    <span wire:loading.remove wire:target="upload">Subir Documento(s)</span>
-                    <span wire:loading wire:target="upload">Subiendo...</span>
+                    <span wire:loading.remove wire:target="saveDocuments">Subir Documento(s)</span>
+                    <span wire:loading wire:target="saveDocuments">Subiendo...</span>
                 </button>
             </div>
         </form>

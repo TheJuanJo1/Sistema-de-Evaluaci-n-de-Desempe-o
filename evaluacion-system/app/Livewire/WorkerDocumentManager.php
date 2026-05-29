@@ -74,7 +74,7 @@ class WorkerDocumentManager extends Component
         }
     }
 
-    public function upload()
+    public function saveDocuments()
     {
         // Asegurarse de que el directorio temporal existe
         if (!Storage::disk('local')->exists('livewire-tmp')) {
