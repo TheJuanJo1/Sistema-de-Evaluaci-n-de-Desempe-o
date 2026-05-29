@@ -28,13 +28,13 @@
                 
                 // Validar extensión
                 if (!allowedExtensions.includes(extension)) {
-                    filesWithErrors.push('\"' + file.name + '\" (formato no permitido)');
+                    filesWithErrors.push(file.name + ' (formato no permitido)');
                     continue;
                 }
                 
                 // Validar tamaño (5MB = 5242880 bytes) - Usamos <= invertido para evitar '>'
                 if (!(file.size <= 5242880)) {
-                    filesWithErrors.push('\"' + file.name + '\" (supera los 5 MB)');
+                    filesWithErrors.push(file.name + ' (supera los 5 MB)');
                     continue;
                 }
             }
