@@ -75,11 +75,17 @@
                             <td class="px-6 py-4 text-right">
                                 <div class="flex justify-end space-x-2">
                                     @role('Administrador|Talento Humano|Rector')
-                                        <a href="{{ route('workers.edit', $worker) }}" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition duration-200" title="Editar">
+                                    @if(isset($worker->model_type) && ($worker->model_type === 'worker' || $worker->model_type === 'user'))
+<!-- Conditional edit link -->
+@php
+    $editRoute = ($worker->model_type === 'worker') ? route('workers.edit', $worker->id) : route('users.edit', $worker->id);
+@endphp
+<a href="{{ $editRoute }}" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition duration-200" title="Editar">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+</a>
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                         </a>
-                                        
-                                        <form action="{{ route('workers.toggle', $worker) }}" method="POST" class="inline">
+                                        <form action="{{ route('workers.toggle', $worker->id) }}" method="POST" class="inline">
                                             @csrf
                                             @method('PATCH')
                                             <button type="submit" class="p-2 {{ $worker->is_active ? 'text-slate-400 hover:text-red-600 hover:bg-red-50' : 'text-slate-400 hover:text-green-600 hover:bg-green-50' }} rounded-lg transition duration-200" title="{{ $worker->is_active ? 'Desactivar' : 'Activar' }}">
@@ -90,6 +96,7 @@
                                                 @endif
                                             </button>
                                         </form>
+                                    @endif
                                     @endrole
                                 </div>
                             </td>
