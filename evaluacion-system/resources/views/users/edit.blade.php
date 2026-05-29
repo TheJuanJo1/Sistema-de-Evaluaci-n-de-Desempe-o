@@ -58,9 +58,37 @@
                         <x-input-error :messages="$errors->get('role')" class="mt-2" />
                     </div>
 
+                    <!-- Position -->
+                    <div class="mt-4">
+                        <x-input-label for="position" value="Cargo / Función" class="font-bold text-slate-700 uppercase text-[10px] tracking-widest mb-2" />
+                        <x-text-input id="position" class="block mt-1 w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-blue-500 transition duration-200" type="text" name="position" :value="old('position', $user->position ?? '')" />
+                        <x-input-error :messages="$errors->get('position')" class="mt-2" />
+                    </div>
+
+                    <!-- Type -->
+                    <div class="mt-4" x-data="{ customType: false }">
+                        <div class="flex items-center justify-between mb-2">
+                            <x-input-label for="type" value="Tipo de Usuario" class="font-bold text-slate-700 uppercase text-[10px] tracking-widest" />
+                            <button type="button" @click="customType = !customType" class="text-[10px] font-bold text-blue-600 uppercase tracking-widest hover:text-blue-700 transition duration-200 flex items-center">
+                                <span x-text="customType ? '← Seleccionar' : '+ Añadir Nuevo'"></span>
+                            </button>
+                        </div>
+                        <div x-show="!customType">
+                            <select id="type_select" name="type" class="block mt-1 w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-blue-500 transition duration-200 text-sm py-2.5" x-bind:disabled="customType">
+                                @foreach(['Directivo','Docente','Administrativo','Servicios Generales','Psicorientación','Biblioteca'] as $typeOption)
+                                    <option value="{{ $typeOption }}" {{ old('type', $user->type ?? '') == $typeOption ? 'selected' : '' }}>{{ $typeOption }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div x-show="customType" x-cloak>
+                            <x-text-input id="type_custom" class="block mt-1 w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-blue-500 transition duration-200" type="text" name="type" placeholder="Escribe el nuevo tipo aquí..." x-bind:disabled="!customType" />
+                        </div>
+                        <x-input-error :messages="$errors->get('type')" class="mt-2" />
+                    </div>
+
                     <!-- Document Management -->
                     <div class="mt-6">
-                        <livewire:worker-document-manager :worker="$user" />
+                        <livewire:worker-document-manager :worker="$worker" />
                     </div>
 
                     <div class="mt-10 pt-6 border-t border-slate-100">

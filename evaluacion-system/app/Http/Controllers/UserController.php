@@ -61,7 +61,10 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $roles = Role::all();
-        return view('users.edit', compact('user', 'roles'));
+        $worker = \App\Models\Worker::where('email', $user->email)->first();
+        // If no worker exists, create an empty instance to avoid type errors
+        $worker = $worker ?? new \App\Models\Worker();
+        return view('users.edit', compact('user', 'roles', 'worker'));
     }
 
     public function update(Request $request, User $user)
@@ -70,6 +73,10 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'role' => ['required', 'exists:roles,name'],
+            // Campos adicionales para sincronizar con Worker
+            'document_id' => ['nullable', 'string', 'max:20'],
+            'position' => ['nullable', 'string', 'max:255'],
+            'type' => ['nullable', 'string', 'max:255'],
         ]);
 
         $user->update([
@@ -85,6 +92,25 @@ class UserController extends Controller
         }
 
         $user->syncRoles([$request->role]);
+
+        // Sincronizar datos con el modelo Worker (o crear si no existe)
+        $worker = \App\Models\Worker::where('email', $user->email)->first();
+        if ($worker) {
+            $worker->update([
+                'document_id' => $request->input('document_id', $worker->document_id),
+                'position' => $request->input('position', $worker->position),
+                'type' => $request->input('type', $worker->type),
+            ]);
+        } else {
+            \App\Models\Worker::create([
+                'name' => $user->name,
+                'email' => $user->email,
+                'document_id' => $request->input('document_id', ''),
+                'position' => $request->input('position', ''),
+                'type' => $request->input('type', ''),
+                'is_active' => true,
+            ]);
+        }
 
         return redirect()->route('users.index')->with('status', 'Usuario actualizado exitosamente.');
     }
