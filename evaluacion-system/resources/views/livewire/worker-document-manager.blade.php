@@ -74,7 +74,7 @@
                         </div>
                         <input id="files" wire:model="files" type="file" class="hidden" multiple @change="validateFiles($event)"/>
                     </label>
-                </div>
+                </div>/
                 
                 <!-- Client side validation error -->
                 <template x-if="clientError">
