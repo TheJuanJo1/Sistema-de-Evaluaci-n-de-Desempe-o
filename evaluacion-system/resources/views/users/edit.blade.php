@@ -30,11 +30,19 @@
                         <x-input-error :messages="$errors->get('name')" class="mt-2" />
                     </div>
 
+
                     <!-- Email -->
                     <div>
                         <x-input-label for="email" value="Correo Electrónico" class="font-bold text-slate-700 uppercase text-[10px] tracking-widest mb-2" />
                         <x-text-input id="email" class="block mt-1 w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-blue-500 transition duration-200" type="email" name="email" :value="old('email', $user->email)" required />
                         <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                    </div>
+
+                    <!-- Documento de Identidad -->
+                    <div>
+                        <x-input-label for="document_id" value="Documento de Identidad" class="font-bold text-slate-700 uppercase text-[10px] tracking-widest mb-2" />
+                        <x-text-input id="document_id" class="block mt-1 w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-blue-500 transition duration-200" type="text" name="document_id" :value="old('document_id', $user->document_id ?? '')" />
+                        <x-input-error :messages="$errors->get('document_id')" class="mt-2" />
                     </div>
 
                     <!-- Role -->
@@ -48,6 +56,11 @@
                             @endforeach
                         </select>
                         <x-input-error :messages="$errors->get('role')" class="mt-2" />
+                    </div>
+
+                    <!-- Document Management -->
+                    <div class="mt-6">
+                        <livewire:worker-document-manager :worker="$user" />
                     </div>
 
                     <div class="mt-10 pt-6 border-t border-slate-100">
