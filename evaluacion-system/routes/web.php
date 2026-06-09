@@ -45,8 +45,8 @@ Route::middleware('auth')->group(function () {
         ->name('profile.update');
     Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])
         ->name('profile.updatePassword');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])
-        ->name('profile.destroy');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::delete('/profile/signature', [ProfileController::class, 'deleteSignature'])->name('profile.signature.destroy');
 
     // ---------- Support ----------
     Route::get('/support', [SupportController::class, 'index'])
@@ -110,7 +110,7 @@ Route::middleware('auth')->group(function () {
                 ->name('evaluations.edit');
             Route::put('evaluations/{evaluation}', [EvaluationController::class, 'update'])
                 ->name('evaluations.update');
-            Route::get('evaluations/export/{period}', [EvaluationController::class, 'exportCsv'])
+            Route::get('evaluations/export/{period}', [EvaluationController::class, 'exportPdf'])
                 ->name('evaluations.export');
         });
 

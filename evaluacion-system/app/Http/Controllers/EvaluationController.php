@@ -7,7 +7,7 @@ use App\Models\Evaluation;
 use App\Models\EvaluationPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class EvaluationController extends Controller
 {
@@ -70,53 +70,15 @@ class EvaluationController extends Controller
         return redirect()->route('evaluations.index')->with('status', 'Evaluación firmada correctamente.');
     }
 
-    public function exportCsv(EvaluationPeriod $period)
+    public function exportPdf(EvaluationPeriod $period)
     {
         $evaluations = Evaluation::where('period_id', $period->id)
             ->with(['worker', 'answers'])
             ->get();
 
-        $filename = "Consolidado_" . str_replace(' ', '_', $period->name) . ".csv";
-        
-        $headers = [
-            "Content-type"        => "text/csv; charset=UTF-8",
-            "Content-Disposition" => "attachment; filename=$filename",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        ];
-
-        $columns = [
-            'ID Trabajador', 'Nombre', 'Tipo', 'Cargo', 
-            'Puntaje Desempeno', 'Puntaje Satisfaccion', 'Puntaje Final', 
-            'Estado', 'Firmado'
-        ];
-
-        $callback = function() use($evaluations, $columns) {
-            $file = fopen('php://output', 'w');
-            // BOM for Excel UTF-8 support
-            fputs($file, "\xEF\xBB\xBF");
-            fputcsv($file, $columns, ';');
-
-            foreach ($evaluations as $evaluation) {
-                $performanceAvg = $evaluation->answers()->avg('score') ?: 0;
-                
-                fputcsv($file, [
-                    $evaluation->worker->document_id,
-                    $evaluation->worker->name,
-                    $evaluation->worker->type,
-                    $evaluation->worker->position,
-                    round($performanceAvg, 2),
-                    round($evaluation->satisfaction_score ?: 0, 2),
-                    round($evaluation->final_score ?: 0, 2),
-                    $evaluation->status,
-                    $evaluation->worker_signed_at ? 'SI' : 'NO'
-                ], ';');
-            }
-
-            fclose($file);
-        };
-
-        return Response::stream($callback, 200, $headers);
+        $pdf = Pdf::loadView('evaluations.pdf', compact('evaluations', 'period'));
+        $filename = "Consolidado_" . str_replace(' ', '_', $period->name) . ".pdf";
+        return $pdf->download($filename);
     }
+
 }

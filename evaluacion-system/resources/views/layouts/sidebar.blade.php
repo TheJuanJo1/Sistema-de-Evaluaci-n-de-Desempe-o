@@ -31,7 +31,7 @@
         <span x-show="!sidebarCollapsed" class="ml-5 font-bold text-sm tracking-tight truncate text-white">Dashboard</span>
     </a>
 
-    @role('Administrador|Rector|Coord. Académico|Coord. Convivencia|Talento Humano')
+    {{-- Evaluaciones – visible para todos los roles --}}
     <div class="pt-6">
         <div class="px-6 mb-4 flex items-center" :class="sidebarCollapsed ? 'justify-center' : ''">
             <p x-show="!sidebarCollapsed" class="text-[10px] font-black text-white uppercase tracking-[0.25em]">Evaluaciones</p>
@@ -47,7 +47,6 @@
             <span x-show="!sidebarCollapsed" class="ml-5 font-bold text-sm tracking-tight truncate text-white">Evaluaciones</span>
         </a>
     </div>
-    @endrole
 
     @role('Administrador|Talento Humano')
     <div class="pt-6">

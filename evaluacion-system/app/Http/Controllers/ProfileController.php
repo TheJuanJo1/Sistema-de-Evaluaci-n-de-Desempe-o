@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -26,15 +27,37 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        // Fill basic fields (name, email, etc.)
         $request->user()->fill($request->validated());
 
+        // Handle signature upload if present
+        if ($request->hasFile('signature')) {
+            $path = $request->file('signature')->store('signatures', 'public');
+            $request->user()->signature = $path;
+        }
+
+        // Reset email verification if email changed
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
         }
 
         $request->user()->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return redirect('/profile')->with('status', 'profile-updated');
+    }
+
+    /**
+     * Delete the user's signature.
+     */
+    public function deleteSignature(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        if ($user->signature && Storage::disk('public')->exists($user->signature)) {
+            Storage::disk('public')->delete($user->signature);
+        }
+        $user->signature = null;
+        $user->save();
+        return back()->with('status', 'signature-deleted');
     }
 
     /**

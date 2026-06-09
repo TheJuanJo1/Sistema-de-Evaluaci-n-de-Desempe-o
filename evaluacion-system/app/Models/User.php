@@ -24,6 +24,7 @@ class User extends Authenticatable
         'email',
         'password',
         'is_active',
+        'signature', // new field for user signature image
     ];
 
     /**

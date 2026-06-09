@@ -16,25 +16,29 @@ class RolesAndAdminSeeder extends Seeder
     public function run(): void
     {
         // Crear roles
-        $roles = [
+        			// Eliminar roles antiguos que tenían nombres abreviados
+			Role::whereIn('name', ['Coord. Académico', 'Coord. Convivencia'])->delete();
+
+			$roles = [
             'Administrador',
             'Rector',
-            'Coord. Académico',
-            'Coord. Convivencia',
+            'Coordinador Académico',
+            'Coordinador de Convivencia',
             'Talento Humano'
         ];
 
         foreach ($roles as $role) {
-            Role::create(['name' => $role]);
+            Role::firstOrCreate(['name' => $role]);
         }
 
         // Crear usuario administrador
-        $admin = User::create([
-            'name' => 'Administrador',
-            'email' => 'admin@institucion.edu.co',
-            'password' => Hash::make('password'),
-            'is_active' => true,
-        ]);
+                    $admin = User::firstOrCreate([
+                'email' => 'admin@institucion.edu.co',
+            ], [
+                'name' => 'Administrador',
+                'password' => Hash::make('password'),
+                'is_active' => true,
+            ]);
 
         $admin->assignRole('Administrador');
     }
