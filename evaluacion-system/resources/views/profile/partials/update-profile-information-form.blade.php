@@ -28,16 +28,27 @@
             <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
             <x-input-error class="mt-2" :messages="$errors->get('email')" />
 
-            <!-- Signature upload -->
-            <x-input-label for="signature" :value="__('Firma')" class="mt-4" />
-            <x-text-input id="signature" name="signature" type="file" accept="image/*" class="mt-1 block w-full" />
-            <x-input-error class="mt-2" :messages="$errors->get('signature')" />
-            @if($user->signature)
-                <div class="mt-2 flex items-center gap-4">
-                    <p class="text-sm text-gray-600">{{ __('Firma actual:') }}</p>
-                    <img src="{{ asset('storage/' . $user->signature) }}" alt="Firma" class="h-24" />
-                </div>
-@endif
+            <!-- Signature upload with preview -->
+            <div x-data="{ preview: null }" class="mt-4">
+                <x-input-label for="signature" :value="__('Firma')" />
+                <x-text-input id="signature" name="signature" type="file" accept="image/*"
+                    class="mt-1 block w-full"
+                    @change="
+                        const file = $event.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = e => preview = e.target.result;
+                            reader.readAsDataURL(file);
+                        }
+                    " />
+                <x-input-error class="mt-2" :messages="$errors->get('signature')" />
+                <template x-if="preview">
+                    <div class="mt-2 flex items-center gap-4">
+                        <p class="text-sm text-gray-600">{{ __('Vista previa:') }}</p>
+                        <img :src="preview" alt="Vista previa firma" class="h-24" />
+                    </div>
+                </template>
+            </div>
 
             @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
                 <div>
