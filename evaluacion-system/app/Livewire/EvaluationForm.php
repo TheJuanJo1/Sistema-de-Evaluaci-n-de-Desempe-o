@@ -62,11 +62,16 @@ class EvaluationForm extends Component
         
         $this->observation = $obs ? $obs->observation : '';
 
-        // Cargar plan de mejora
-        $plan = \App\Models\ImprovementPlan::where('evaluation_id', $this->evaluation->id)->first();
+        // Cargar plan de mejora del usuario autenticado
+        $plan = \App\Models\ImprovementPlan::where('evaluation_id', $this->evaluation->id)
+            ->where('user_id', $user->id)
+            ->first();
         if ($plan) {
             $this->aspectsToImprove = $plan->aspects_to_improve;
             $this->workerCommitment = $plan->worker_commitment;
+        } else {
+            $this->aspectsToImprove = '';
+            $this->workerCommitment = '';
         }
 
         $this->satisfactionScore = $this->evaluation->satisfaction_score;
@@ -142,9 +147,12 @@ class EvaluationForm extends Component
             ]
         );
 
-        // Guardar Plan de Mejora
+        // Guardar Plan de Mejora para el usuario autenticado
         \App\Models\ImprovementPlan::updateOrCreate(
-            ['evaluation_id' => $this->evaluation->id],
+            [
+                'evaluation_id' => $this->evaluation->id,
+                'user_id' => $user->id,
+            ],
             [
                 'aspects_to_improve' => $this->aspectsToImprove,
                 'worker_commitment' => $this->workerCommitment,

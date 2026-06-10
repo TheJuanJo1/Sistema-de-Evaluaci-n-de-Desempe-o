@@ -112,6 +112,20 @@ Route::middleware('auth')->group(function () {
                 ->name('evaluations.update');
             Route::get('evaluations/export/{period}', [EvaluationController::class, 'exportPdf'])
                 ->name('evaluations.export');
+
+            // Firmar y guardar firma de evaluación
+            Route::get('evaluations/{evaluation}/sign', [EvaluationController::class, 'sign'])
+                ->name('evaluations.sign');
+            Route::post('evaluations/{evaluation}/sign', [EvaluationController::class, 'storeSignature'])
+                ->name('evaluations.store-signature');
+
+            // Seguimiento de evaluación
+            Route::get('evaluations/{evaluation}/follow-up', [EvaluationController::class, 'followUp'])
+                ->name('evaluations.follow-up');
+
+            // Reporte PDF individual de evaluación
+            Route::get('evaluations/{evaluation}/report', [\App\Http\Controllers\EvaluationReportController::class, 'generate'])
+                ->name('evaluations.report');
         });
 
     // ---------- Admin‑only roles ----------

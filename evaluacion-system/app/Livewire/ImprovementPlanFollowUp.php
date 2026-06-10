@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Auth;
 class ImprovementPlanFollowUp extends Component
 {
     public Evaluation $evaluation;
+    public $plans = [];
+    public $selectedPlanId = null;
     public $plan;
     public $newComment = '';
     public $status = '';
@@ -18,11 +20,43 @@ class ImprovementPlanFollowUp extends Component
     public function mount(Evaluation $evaluation)
     {
         $this->evaluation = $evaluation;
-        $this->plan = ImprovementPlan::firstOrCreate(
-            ['evaluation_id' => $evaluation->id],
-            ['status' => 'Pendiente']
-        );
-        $this->status = $this->plan->status;
+        $this->loadPlans();
+    }
+
+    public function loadPlans()
+    {
+        $this->plans = ImprovementPlan::where('evaluation_id', $this->evaluation->id)
+            ->with('user')
+            ->get();
+
+        if ($this->plans->isEmpty()) {
+            $defaultPlan = ImprovementPlan::create([
+                'evaluation_id' => $this->evaluation->id,
+                'user_id' => Auth::id(),
+                'status' => 'Pendiente',
+            ]);
+            $this->plans = collect([$defaultPlan]);
+        }
+
+        if (!$this->selectedPlanId) {
+            $this->selectedPlanId = $this->plans->first()->id;
+        }
+
+        $this->loadActivePlan();
+    }
+
+    public function loadActivePlan()
+    {
+        $this->plan = ImprovementPlan::find($this->selectedPlanId);
+        if ($this->plan) {
+            $this->status = $this->plan->status;
+        }
+    }
+
+    public function updatedSelectedPlanId($value)
+    {
+        $this->selectedPlanId = $value;
+        $this->loadActivePlan();
     }
 
     public function addFollowUp()
@@ -31,17 +65,19 @@ class ImprovementPlanFollowUp extends Component
             'newComment' => 'required|string|min:10',
         ]);
 
-        FollowUp::create([
-            'improvement_plan_id' => $this->plan->id,
-            'user_id' => Auth::id(),
-            'comments' => $this->newComment,
-            'follow_up_date' => now(),
-        ]);
+        if ($this->plan) {
+            FollowUp::create([
+                'improvement_plan_id' => $this->plan->id,
+                'user_id' => Auth::id(),
+                'comments' => $this->newComment,
+                'follow_up_date' => now(),
+            ]);
 
-        $this->plan->update(['status' => $this->status]);
+            $this->plan->update(['status' => $this->status]);
+        }
 
         $this->newComment = '';
-        $this->plan->refresh();
+        $this->loadPlans();
         
         session()->flash('status', 'Seguimiento registrado correctamente.');
     }
@@ -49,7 +85,7 @@ class ImprovementPlanFollowUp extends Component
     public function render()
     {
         return view('livewire.improvement-plan-follow-up', [
-            'followUps' => $this->plan->followUps()->latest()->get()
+            'followUps' => $this->plan ? $this->plan->followUps()->latest()->get() : collect([])
         ]);
     }
 }

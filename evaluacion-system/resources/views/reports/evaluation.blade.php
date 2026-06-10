@@ -222,22 +222,38 @@
     </div>
 
     @php
-        $plan = \App\Models\ImprovementPlan::where('evaluation_id', $evaluation->id)->first();
+        $plans = \App\Models\ImprovementPlan::where('evaluation_id', $evaluation->id)
+            ->where(function($query) {
+                $query->where(function($q) {
+                    $q->whereNotNull('aspects_to_improve')->where('aspects_to_improve', '!=', '');
+                })->orWhere(function($q) {
+                    $q->whereNotNull('worker_commitment')->where('worker_commitment', '!=', '');
+                });
+            })
+            ->with('user')
+            ->get();
     @endphp
 
-    @if($plan)
+    @if($plans->isNotEmpty())
     <div style="margin-top: 30px;">
-        <h3 style="border-bottom: 2px solid #3b82f6; padding-bottom: 5px; color: #1d4ed8;">PLAN DE MEJORA</h3>
-        <table class="info-table">
-            <tr>
-                <td class="label">Aspectos a Mejorar:</td>
-                <td style="padding: 10px;">{{ $plan->aspects_to_improve }}</td>
-            </tr>
-            <tr>
-                <td class="label">Compromiso del Trabajador:</td>
-                <td style="padding: 10px;">{{ $plan->worker_commitment }}</td>
-            </tr>
-        </table>
+        <h3 style="border-bottom: 2px solid #3b82f6; padding-bottom: 5px; color: #1d4ed8;">PLANES DE MEJORA</h3>
+        @foreach($plans as $plan)
+            <div style="margin-bottom: 20px; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; background-color: #f8fafc;">
+                <h4 style="margin-top: 0; margin-bottom: 10px; color: #334155; font-size: 11pt; border-bottom: 1px dashed #e2e8f0; padding-bottom: 5px;">
+                    Plan propuesto por: <strong>{{ $plan->user ? $plan->user->name : 'N/A' }}</strong> ({{ $plan->user ? $plan->user->getRoleNames()->first() : 'N/A' }}) - Estado: <strong>{{ $plan->status }}</strong>
+                </h4>
+                <table class="info-table" style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td class="label" style="width: 30%; font-weight: bold; color: #475569; padding: 6px 0; vertical-align: top;">Aspectos a Mejorar:</td>
+                        <td style="padding: 6px 10px; color: #334155; vertical-align: top; white-space: pre-line;">{{ $plan->aspects_to_improve ?: 'No especificados' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="width: 30%; font-weight: bold; color: #475569; padding: 6px 0; vertical-align: top;">Compromiso del Trabajador:</td>
+                        <td style="padding: 6px 10px; color: #334155; vertical-align: top; white-space: pre-line;">{{ $plan->worker_commitment ?: 'No especificados' }}</td>
+                    </tr>
+                </table>
+            </div>
+        @endforeach
     </div>
     @endif
 

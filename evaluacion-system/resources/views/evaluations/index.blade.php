@@ -98,11 +98,6 @@
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex justify-end space-x-2">
-                                        @if($evaluation->status == 'Completada' && !$evaluation->worker_signed_at)
-                                            <a href="{{ route('evaluations.sign', $evaluation) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 shadow-sm transition duration-150">
-                                                Firmar
-                                            </a>
-                                        @endif
                                         @if($evaluation->status == 'Completada')
                                             <a href="{{ route('evaluations.report', $evaluation) }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 shadow-sm transition duration-150" title="Descargar Reporte PDF">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path></svg>
@@ -111,17 +106,24 @@
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01"></path></svg>
                                             </a>
                                         @endif
+                                        @php
+                                            $showAsEdit = $hasEvaluated || $evaluation->status == 'Completada' || $evaluation->status == 'En Proceso';
+                                        @endphp
                                         @if($isRequiredToEvaluate)
                                             <a href="{{ route('evaluations.edit', $evaluation) }}" 
-                                               class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest focus:outline-none focus:ring transition ease-in-out duration-150 {{ $hasEvaluated ? 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-900 ring-indigo-300' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-900 ring-blue-300' }}">
-                                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                                {{ $hasEvaluated ? 'Editar' : 'Evaluar' }}
+                                               class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest focus:outline-none focus:ring transition ease-in-out duration-150 {{ $showAsEdit ? 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-900 ring-indigo-300' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-900 ring-blue-300' }}">
+                                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 4h6a2 2 0 012 2v12a2 2 0 01-2 2H9a2 2 0 01-2-2V6a2 2 0 012-2zM9 8v8h6V8H9z"></path></svg>
+                                                {{ $showAsEdit ? 'Editar' : 'Evaluar' }}
                                             </a>
                                         @else
                                             <a href="{{ route('evaluations.edit', $evaluation) }}" 
-                                               class="inline-flex items-center px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest focus:outline-none focus:ring transition ease-in-out duration-150 ring-slate-300">
-                                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                                Ver
+                                               class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest focus:outline-none focus:ring transition ease-in-out duration-150 {{ $showAsEdit ? 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-900 ring-indigo-300' : 'bg-slate-800 hover:bg-slate-700 active:bg-slate-950 ring-slate-300' }}">
+                                                @if($showAsEdit)
+                                                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 4h6a2 2 0 012 2v12a2 2 0 01-2 2H9a2 2 0 01-2-2V6a2 2 0 012-2zM9 8v8h6V8H9z"></path></svg>
+                                                @else
+                                                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                                @endif
+                                                {{ $showAsEdit ? 'Editar' : 'Llenar' }}
                                             </a>
                                         @endif
                                     </div>

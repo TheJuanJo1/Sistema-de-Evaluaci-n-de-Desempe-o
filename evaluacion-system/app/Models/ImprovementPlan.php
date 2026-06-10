@@ -11,6 +11,7 @@ class ImprovementPlan extends Model
 
     protected $fillable = [
         'evaluation_id',
+        'user_id',
         'aspects_to_improve',
         'worker_commitment',
         'status',
@@ -19,6 +20,11 @@ class ImprovementPlan extends Model
     public function evaluation()
     {
         return $this->belongsTo(Evaluation::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function followUps()
