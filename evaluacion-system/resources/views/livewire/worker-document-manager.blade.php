@@ -162,7 +162,37 @@
     </div>
 
     <!-- Documents List -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="space-y-4">
+
+        <!-- Header con buscador -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+                <h4 class="text-base font-bold text-slate-700">Documentos Subidos</h4>
+                <p class="text-xs text-slate-400 mt-0.5">{{ $documents->count() }} {{ $documents->count() === 1 ? 'documento encontrado' : 'documentos encontrados' }}</p>
+            </div>
+            <!-- Buscador -->
+            <div class="relative sm:w-72">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 pointer-events-none">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </span>
+                <input
+                    wire:model.live.debounce.300ms="search"
+                    type="text"
+                    class="block w-full pl-9 pr-9 py-2 border border-slate-200 rounded-xl leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 text-sm"
+                >
+                @if($search)
+                    <button wire:click="$set('search', '')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                @endif
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         @forelse($documents as $doc)
             <div class="flex items-center justify-between p-4 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition duration-200">
                 <div class="flex items-center overflow-hidden">
@@ -185,8 +215,13 @@
             </div>
         @empty
             <div class="col-span-full py-8 text-center bg-slate-50 rounded-2xl border border-slate-100 italic text-slate-400">
-                No hay documentos registrados para este trabajador.
+                @if($search)
+                    No se encontraron documentos que coincidan con "<span class="font-semibold not-italic text-slate-600">{{ $search }}</span>".
+                @else
+                    No hay documentos registrados para este trabajador.
+                @endif
             </div>
         @endforelse
-    </div>
+        </div>{{-- end grid --}}
+    </div>{{-- end space-y-4 --}}
 </div>

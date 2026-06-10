@@ -93,24 +93,18 @@ class UserController extends Controller
 
         $user->syncRoles([$request->role]);
 
-        // Sincronizar datos con el modelo Worker (o crear si no existe)
+        // Sincronizar datos con el modelo Worker (solo si existe, sin sobreescribir con nulos)
         $worker = \App\Models\Worker::where('email', $user->email)->first();
         if ($worker) {
             $worker->update([
-                'document_id' => $request->input('document_id', $worker->document_id),
-                'position' => $request->input('position', $worker->position),
-                'type' => $request->input('type', $worker->type),
-            ]);
-        } else {
-            \App\Models\Worker::create([
-                'name' => $user->name,
-                'email' => $user->email,
-                'document_id' => $request->input('document_id', ''),
-                'position' => $request->input('position', ''),
-                'type' => $request->input('type', ''),
-                'is_active' => true,
+                'name'        => $user->name,
+                'document_id' => $request->filled('document_id') ? $request->document_id : $worker->document_id,
+                'position'    => $request->filled('position')    ? $request->position    : $worker->position,
+                'type'        => $request->filled('type')        ? $request->type        : $worker->type,
             ]);
         }
+        // No se crea un Worker nuevo desde aquí; los workers se crean desde el módulo de Trabajadores.
+
 
         return redirect()->route('users.index')->with('status', 'Usuario actualizado exitosamente.');
     }

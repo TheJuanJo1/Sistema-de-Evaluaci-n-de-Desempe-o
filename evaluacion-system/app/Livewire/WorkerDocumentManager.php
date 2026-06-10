@@ -40,6 +40,7 @@ class WorkerDocumentManager extends Component
     public $files = []; // Cambiado a arreglo para soporte múltiple
     public $documentName;
     public $documentType;
+    public $search = '';
 
     public function mount(Worker $worker)
     {
@@ -197,8 +198,18 @@ class WorkerDocumentManager extends Component
 
     public function render()
     {
+        $documents = $this->worker->documents()
+            ->when($this->search, function ($q) {
+                $q->where(function ($sub) {
+                    $sub->where('name', 'like', '%' . $this->search . '%')
+                        ->orWhere('type', 'like', '%' . $this->search . '%');
+                });
+            })
+            ->latest()
+            ->get();
+
         return view('livewire.worker-document-manager', [
-            'documents' => $this->worker->documents()->latest()->get()
+            'documents' => $documents,
         ]);
     }
 }
