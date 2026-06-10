@@ -32,7 +32,7 @@ class EvaluationSeeder extends Seeder
         $c2 = Competency::create([
             'name' => 'Académico Comportamental',
             'type' => 'Docente',
-            'evaluator_role' => 'Coord. Académico',
+            'evaluator_role' => 'Coordinador Académico',
         ]);
 
         $this->createQuestions($c2, [
@@ -56,7 +56,7 @@ class EvaluationSeeder extends Seeder
         $c3 = Competency::create([
             'name' => 'Cultura y Calidad',
             'type' => 'Docente',
-            'evaluator_role' => 'Coord. Convivencia',
+            'evaluator_role' => 'Coordinador de Convivencia',
         ]);
 
         $this->createQuestions($c3, [
@@ -105,7 +105,7 @@ class EvaluationSeeder extends Seeder
         $a2 = Competency::create([
             'name' => 'Específicas del Cargo',
             'type' => 'Administrativo',
-            'evaluator_role' => 'Coord. Académico',
+            'evaluator_role' => 'Coordinador Académico',
         ]);
 
         $this->createQuestions($a2, [
@@ -125,7 +125,7 @@ class EvaluationSeeder extends Seeder
         $a3 = Competency::create([
             'name' => 'Actitudinales',
             'type' => 'Administrativo',
-            'evaluator_role' => 'Coord. Convivencia',
+            'evaluator_role' => 'Coordinador de Convivencia',
         ]);
 
         $this->createQuestions($a3, [
