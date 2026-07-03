@@ -89,9 +89,6 @@
                                 Iniciar Evaluación
                                 <svg class="w-5 h-5 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                             </a>
-                            <a href="{{ route('workers.index') }}" class="inline-flex items-center px-8 py-4 bg-white/10 hover:bg-white/20 rounded-2xl font-black text-sm uppercase tracking-widest backdrop-blur-md transition duration-300">
-                                Ver Personal
-                            </a>
                         </div>
                     </div>
                     <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-blue-500/20 rounded-full blur-[100px]"></div>
