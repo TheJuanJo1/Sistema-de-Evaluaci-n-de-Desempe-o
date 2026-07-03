@@ -95,7 +95,7 @@
                     <div class="absolute -left-10 -top-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-[60px]"></div>
                 </div>
             </div>
-
+             
             <!-- Status Sidecard -->
             <div class="space-y-8">
                 <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm">
