@@ -19,6 +19,10 @@ Route::get('/dashboard', fn() => view('dashboard'))
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+Route::get('/', function () {
+    return redirect()->route('login');   // 'login' es el nombre de la ruta de autenticación
+});
+
 /* ------------------------------------------------------------------
    Auth routes (Breeze / Jetstream style)
 ------------------------------------------------------------------ */
