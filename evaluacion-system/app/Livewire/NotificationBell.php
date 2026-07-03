@@ -25,9 +25,14 @@ class NotificationBell extends Component
 
     public function markAsRead($id)
     {
-        $notification = Auth::user()->notifications()->find($id);
-        if ($notification) {
-            $notification->markAsRead();
+        if ($id === 'all') {
+            // Mark all unread notifications as read
+            Auth::user()->unreadNotifications()->update(['read_at' => now()]);
+        } else {
+            $notification = Auth::user()->notifications()->find($id);
+            if ($notification) {
+                $notification->markAsRead();
+            }
         }
         // Refresh the list
         $this->loadNotifications();
