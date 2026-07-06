@@ -46,5 +46,24 @@
             @endforeach
         </tbody>
     </table>
+
+    <!-- Evaluator signatures -->
+    <div class="signatures" style="margin-top:30px;">
+        <h3>Firmas de Evaluadores</h3>
+        @php
+            $evaluatorUsers = $evaluations->flatMap(function($e) {
+                return $e->observations->map->user;
+            })->filter()->unique('id');
+        @endphp
+        @foreach($evaluatorUsers as $user)
+            @if($user && $user->signature)
+                <div class="signature-box" style="display:inline-block;text-align:center;margin-right:20px;">
+                    <img src="{{ public_path('storage/' . $user->signature) }}" alt="Firma {{ $user->name }}" class="signature-img" style="height:80px;" />
+                    <p>{{ $user->name }}<br/>{{ $user->roles->pluck('name')->join(', ') }}</p>
+                </div>
+            @endif
+        @endforeach
+    </div>
+
 </body>
 </html>

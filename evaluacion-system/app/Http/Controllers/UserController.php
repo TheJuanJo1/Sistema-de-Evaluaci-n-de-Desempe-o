@@ -45,15 +45,15 @@ class UserController extends Controller
 
         // Automatically create a corresponding Worker record for staff roles
         if (in_array($request->role, ['Talento Humano', 'Coordinador de Convivencia', 'Coordinador Académico', 'Rector'])) {
-            Worker::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'document_id' => $request->input('document_id') ?? '',
-                'position' => $request->input('position') ?? '',
-                'type' => $request->role,
-                'is_active' => true,
-            ]);
-        }
+           Worker::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'document_id' => $request->document_id ?: null,
+            'position' => $request->position ?: null,
+            'type' => $request->role,
+            'is_active' => true,
+        ]);
+    }
 
         return redirect()->route('users.index')->with('status', 'Usuario creado exitosamente.');
     }
